@@ -221,3 +221,25 @@ __marimo__/
 .env
 .env.*
 !.env.example
+
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Docker
+docker-compose.override.yml
+
+# Logs
+logs/
+
+# Database
+*.db
+*.sqlite
+
+# Test artifacts
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml

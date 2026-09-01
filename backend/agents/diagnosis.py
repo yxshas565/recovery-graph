@@ -56,17 +56,33 @@ def rules_classify(
     method: str | None,
     has_active_downtime: bool,
 ) -> tuple[FailureClass | None, list[str], float]:
-    desc  = (error_description or "").lower()
-    code  = (error_code or "").lower()
-    src   = (error_source or "").lower()
-    step  = (error_step or "").lower()
-    rsn   = (error_reason or "").lower()
-    meth  = (method or "").lower()
+    desc = (error_description or "").lower()
+    code = (error_code or "").lower()
+    src = (error_source or "").lower()
+    step = (error_step or "").lower()
+    rsn = (error_reason or "").lower()
+    meth = (method or "").lower()
     hits: list[str] = []
 
     if has_active_downtime and meth in ("upi", "netbanking", "card"):
         hits.append("active_downtime_event")
         return FailureClass.BANK_DOWNTIME, hits, 0.92
+
+    # User explicitly cancelled/abandoned the payment.
+    # Check this BEFORE generic authentication/3DS detection because
+    # payment_authentication is also used for normal user cancellation.
+    if (
+        "cancel" in desc
+        or "abandon" in desc
+        or "cancelled" in rsn
+        or "abandoned" in rsn
+    ) and (
+        "user" in desc
+        or "customer" in src
+        or "user" in src
+    ):
+        hits.append("user_cancel_or_abandon")
+        return FailureClass.USER_ABANDONED, hits, 0.90
 
     if "insufficient" in desc or "fund" in desc or "balance" in desc:
         hits.append("desc:insufficient_funds")
@@ -92,11 +108,19 @@ def rules_classify(
         hits.append("desc:limit_exceeded")
         return FailureClass.LIMIT_EXCEEDED, hits, 0.90
 
-    if "do not honor" in desc or "do_not_honour" in rsn or "card_do_not_honor" in code:
+    if (
+        "do not honor" in desc
+        or "do_not_honour" in rsn
+        or "card_do_not_honor" in code
+    ):
         hits.append("desc:do_not_honor")
         return FailureClass.CARD_DO_NOT_HONOR, hits, 0.88
 
-    if "3ds" in desc or "3d_secure" in rsn or "authentication" in step:
+    if (
+        "3ds" in desc
+        or "3d_secure" in rsn
+        or "authentication" in step
+    ):
         hits.append("desc:3ds_failure")
         return FailureClass.THREEDS_FAILURE, hits, 0.87
 
@@ -107,10 +131,6 @@ def rules_classify(
     if "timeout" in desc or "timed out" in desc:
         hits.append("desc:timeout")
         return FailureClass.TIMEOUT_LATE_AUTH, hits, 0.82
-
-    if "user" in src and ("cancel" in desc or "abandon" in desc):
-        hits.append("src:user+cancel")
-        return FailureClass.USER_ABANDONED, hits, 0.88
 
     return None, [], 0.0
 
