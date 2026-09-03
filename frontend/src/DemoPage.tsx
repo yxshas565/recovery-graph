@@ -20,7 +20,7 @@ import {
   XCircle,
 } from "lucide-react";
 
-const API = "http://localhost:8000";
+const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 type Scenario = {
   id: string;
@@ -147,26 +147,6 @@ function fmt(value: any) {
   return String(value);
 }
 
-function getSecret() {
-  return localStorage.getItem("recovery_graph_admin_secret") || "";
-}
-
-function setSecret() {
-  const current = getSecret();
-
-  const value = window.prompt(
-    "Enter the Recovery Graph admin secret.\nStored only in this browser localStorage.",
-    current
-  );
-
-  if (value !== null) {
-    localStorage.setItem("recovery_graph_admin_secret", value);
-    return value;
-  }
-
-  return current;
-}
-
 function toneClass(tone: string) {
   return `rg-tone-${tone}`;
 }
@@ -196,7 +176,6 @@ export default function DemoPage() {
 
       if (episodesResponse.ok) {
         const data = await episodesResponse.json();
-
         setEpisodes(
           Array.isArray(data)
             ? data
@@ -216,9 +195,7 @@ export default function DemoPage() {
 
   useEffect(() => {
     refresh();
-
     const timer = window.setInterval(refresh, 5000);
-
     return () => window.clearInterval(timer);
   }, []);
 
@@ -229,18 +206,11 @@ export default function DemoPage() {
     }
 
     setActiveStep(-1);
-
     const total = scenario.path.length;
-
     scenario.path.forEach((_, index) => {
-      window.setTimeout(() => {
-        setActiveStep(index);
-      }, index * 350);
+      window.setTimeout(() => setActiveStep(index), index * 350);
     });
-
-    window.setTimeout(() => {
-      setActiveStep(total - 1);
-    }, total * 350);
+    window.setTimeout(() => setActiveStep(total - 1), total * 350);
   }, [result, scenario]);
 
   async function runScenario() {
@@ -250,21 +220,10 @@ export default function DemoPage() {
     setActiveStep(-1);
 
     try {
-      let secret = getSecret();
-
-      if (!secret) {
-        secret = setSecret();
-      }
-
-      if (!secret) {
-        throw new Error("Admin secret is required to run a scenario.");
-      }
-
-      const response = await fetch(`${API}/api/admin/inject`, {
+      const response = await fetch(`${API}/api/demo/inject`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-admin-secret": secret,
         },
         body: JSON.stringify({
           scenario: selected,
@@ -276,14 +235,11 @@ export default function DemoPage() {
 
       if (!response.ok) {
         throw new Error(
-          data?.detail
-            ? fmt(data.detail)
-            : `Request failed (${response.status})`
+          data?.detail ? fmt(data.detail) : `Request failed (${response.status})`
         );
       }
 
       setResult(data);
-
       window.setTimeout(refresh, 750);
     } catch (err: any) {
       setError(err?.message || "Recovery request failed.");
@@ -292,45 +248,24 @@ export default function DemoPage() {
     }
   }
 
-  const metricEntries = metrics
-    ? Object.entries(metrics).filter(
-        ([, value]) =>
-          typeof value === "number" || typeof value === "string"
-      )
-    : [];
-
   const duplicateCount =
-    metrics?.duplicate_events_blocked ??
-    metrics?.duplicates_blocked ??
-    0;
+    metrics?.duplicate_events_blocked ?? metrics?.duplicates_blocked ?? 0;
 
   const unsafeRetries =
-    metrics?.unsafe_retries_prevented ??
-    metrics?.duplicate_events_blocked ??
-    0;
+    metrics?.unsafe_retries_prevented ?? metrics?.duplicate_events_blocked ?? 0;
 
   return (
     <div className="rg-demo-page">
       <header className="rg-demo-header">
         <div>
-          <div className="rg-eyebrow">
-            RECOVERY GRAPH / COMMAND CENTER
-          </div>
-
+          <div className="rg-eyebrow">RECOVERY GRAPH / COMMAND CENTER</div>
           <h1>Live Recovery Command Center</h1>
-
           <p>
-            Watch a payment failure move through diagnosis, deterministic
-            policy, bounded execution, outcome and audit.
+            Watch a payment failure move through diagnosis, deterministic policy, bounded execution, outcome and audit.
           </p>
         </div>
 
         <div className="rg-header-actions">
-          <button className="rg-button" onClick={setSecret}>
-            <Shield size={14} />
-            Configure secret
-          </button>
-
           <button className="rg-button" onClick={refresh}>
             <RefreshCw size={14} />
             Refresh
@@ -339,42 +274,13 @@ export default function DemoPage() {
       </header>
 
       <section className="rg-kpi-strip">
-        <div>
-          <span>ENGINE</span>
-          <strong className="rg-live">
-            <i /> ACTIVE
-          </strong>
-        </div>
-
-        <div>
-          <span>EPISODES</span>
-          <strong>{metrics?.total ?? episodes.length}</strong>
-        </div>
-
-        <div>
-          <span>RECOVERED</span>
-          <strong>{metrics?.recovered ?? 0}</strong>
-        </div>
-
-        <div>
-          <span>LATE CAPTURES</span>
-          <strong>{metrics?.captured_late ?? 0}</strong>
-        </div>
-
-        <div>
-          <span>DUPLICATES BLOCKED</span>
-          <strong>{duplicateCount}</strong>
-        </div>
-
-        <div>
-          <span>UNSAFE RETRIES</span>
-          <strong>{unsafeRetries}</strong>
-        </div>
-
-        <div>
-          <span>LEDGER</span>
-          <strong className="rg-safe">INTEGRAL</strong>
-        </div>
+        <div><span>ENGINE</span><strong className="rg-live"><i /> ACTIVE</strong></div>
+        <div><span>EPISODES</span><strong>{metrics?.total ?? episodes.length}</strong></div>
+        <div><span>RECOVERED</span><strong>{metrics?.recovered ?? 0}</strong></div>
+        <div><span>LATE CAPTURES</span><strong>{metrics?.captured_late ?? 0}</strong></div>
+        <div><span>DUPLICATES BLOCKED</span><strong>{duplicateCount}</strong></div>
+        <div><span>UNSAFE RETRIES</span><strong>{unsafeRetries}</strong></div>
+        <div><span>LEDGER</span><strong className="rg-safe">INTEGRAL</strong></div>
       </section>
 
       <div className="rg-command-grid">
@@ -384,24 +290,17 @@ export default function DemoPage() {
               <div className="rg-section-label">FAILURE SIMULATOR</div>
               <h2>Select a payment situation</h2>
             </div>
-
-            <div className="rg-status-pill">
-              <CircleDot size={12} />
-              LIVE
-            </div>
+            <div className="rg-status-pill"><CircleDot size={12} /> LIVE</div>
           </div>
 
           <div className="rg-scenarios">
             {SCENARIOS.map((item) => {
               const Icon = item.icon;
               const active = item.id === selected;
-
               return (
                 <button
                   key={item.id}
-                  className={`rg-scenario ${active ? "selected" : ""} ${toneClass(
-                    item.tone
-                  )}`}
+                  className={`rg-scenario ${active ? "selected" : ""} ${toneClass(item.tone)}`}
                   onClick={() => {
                     setSelected(item.id);
                     setResult(null);
@@ -409,15 +308,8 @@ export default function DemoPage() {
                     setActiveStep(-1);
                   }}
                 >
-                  <div className="rg-scenario-icon">
-                    <Icon size={17} />
-                  </div>
-
-                  <div>
-                    <strong>{item.title}</strong>
-                    <span>{item.description}</span>
-                  </div>
-
+                  <div className="rg-scenario-icon"><Icon size={17} /></div>
+                  <div><strong>{item.title}</strong><span>{item.description}</span></div>
                   {active && <div className="rg-selected-dot" />}
                 </button>
               );
@@ -427,12 +319,7 @@ export default function DemoPage() {
           <div className="rg-run-row">
             <label>
               <span>AMOUNT / PAISE</span>
-
-              <input
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                inputMode="numeric"
-              />
+              <input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="numeric" />
             </label>
 
             <button
@@ -441,49 +328,24 @@ export default function DemoPage() {
               disabled={running}
             >
               {running ? (
-                <>
-                  <RefreshCw size={15} className="rg-spin" />
-                  Executing
-                </>
+                <><RefreshCw size={15} className="rg-spin" /> Executing</>
               ) : scenario.recoverable ? (
-                <>
-                  <Play size={15} />
-                  Run recovery
-                </>
+                <><Play size={15} /> Run recovery</>
               ) : (
-                <>
-                  <Ban size={15} />
-                  Run safety test
-                </>
+                <><Ban size={15} /> Run safety test</>
               )}
             </button>
           </div>
 
           {error && (
-            <div className="rg-alert rg-error">
-              <AlertTriangle size={16} />
-              {error}
-            </div>
+            <div className="rg-alert rg-error"><AlertTriangle size={16} />{error}</div>
           )}
 
           {result && (
-            <div
-              className={`rg-result ${
-                scenario.recoverable ? "success" : "blocked"
-              }`}
-            >
+            <div className={`rg-result ${scenario.recoverable ? "success" : "blocked"}`}>
               <div className="rg-result-title">
-                {scenario.recoverable ? (
-                  <CheckCircle size={18} />
-                ) : (
-                  <Ban size={18} />
-                )}
-
-                <strong>
-                  {scenario.recoverable
-                    ? "Decision executed and recorded"
-                    : "Recovery blocked safely"}
-                </strong>
+                {scenario.recoverable ? <CheckCircle size={18} /> : <Ban size={18} />}
+                <strong>{scenario.recoverable ? "Decision executed and recorded" : "Recovery blocked safely"}</strong>
               </div>
 
               <div className="rg-result-grid">
@@ -495,7 +357,6 @@ export default function DemoPage() {
 
               <details>
                 <summary>View raw response</summary>
-
                 <pre>{JSON.stringify(result, null, 2)}</pre>
               </details>
             </div>
@@ -504,326 +365,17 @@ export default function DemoPage() {
 
         <aside className="rg-panel rg-decision-panel">
           <div className="rg-section-label">WHY THIS DECISION?</div>
-
           <h2>{scenario.policy}</h2>
-
           <div className="rg-decision-score">
-            <div>
-              <span>DIAGNOSIS</span>
-              <strong>{scenario.diagnosis}</strong>
-            </div>
-
-            <div>
-              <span>CONFIDENCE</span>
-              <strong>{scenario.confidence}</strong>
-            </div>
-          </div>
-
-          <div className="rg-decision-block">
-            <BrainCircuit size={15} />
-            <div>
-              <span>EXPECTED OUTCOME</span>
-              <strong>{scenario.expected}</strong>
-            </div>
-          </div>
-
-          <div className="rg-safety-list">
-            <div className="rg-section-label">SAFETY CHECKS</div>
-
-            {scenario.safety.map((item) => (
-              <div key={item}>
-                <CheckCircle size={14} />
-                <span>{item}</span>
-              </div>
-            ))}
-          </div>
-
-          <div
-            className={`rg-decision-banner ${
-              scenario.recoverable ? "allowed" : "blocked"
-            }`}
-          >
-            {scenario.recoverable ? (
-              <>
-                <Zap size={15} />
-                RECOVERY ACTION ALLOWED
-              </>
-            ) : (
-              <>
-                <Lock size={15} />
-                AUTOMATED RECOVERY BLOCKED
-              </>
-            )}
+            <div><span>DIAGNOSIS</span><strong>{scenario.diagnosis}</strong></div>
+            <div><span>CONFIDENCE</span><strong>{scenario.confidence}</strong></div>
           </div>
         </aside>
       </div>
-
-      <section className="rg-panel rg-graph-panel">
-        <div className="rg-panel-heading">
-          <div>
-            <div className="rg-section-label">RECOVERY GRAPH</div>
-            <h2>Decision path</h2>
-            <p>
-              Every action must pass diagnosis and deterministic policy before
-              money movement.
-            </p>
-          </div>
-
-          <div className="rg-graph-legend">
-            <span>
-              <i className="active" /> Active path
-            </span>
-            <span>
-              <i /> Not executed
-            </span>
-          </div>
-        </div>
-
-        <div className="rg-graph">
-          {scenario.path.map((node, index) => {
-            const isActive = index <= activeStep;
-            const isBlocked =
-              node === "Blocked" ||
-              node === "Suppressed";
-
-            return (
-              <div className="rg-graph-node-wrap" key={`${node}-${index}`}>
-                <div
-                  className={`rg-graph-node ${
-                    isActive ? "active" : ""
-                  } ${isBlocked ? "blocked" : ""}`}
-                >
-                  <div className="rg-node-number">
-                    {String(index + 1).padStart(2, "0")}
-                  </div>
-
-                  <div className="rg-node-icon">
-                    {node === "Event" && <Activity size={16} />}
-                    {node === "Episode" && <GitBranch size={16} />}
-                    {node === "Diagnosis" && <BrainCircuit size={16} />}
-                    {node === "Policy" && <Shield size={16} />}
-                    {node === "Executor" && <Zap size={16} />}
-                    {node === "Outcome" && <CheckCircle size={16} />}
-                    {node === "Audit" && <Database size={16} />}
-                    {node === "Blocked" && <Ban size={16} />}
-                    {node === "Suppressed" && <Lock size={16} />}
-                    {node === "Idempotency" && <Lock size={16} />}
-                    {node === "Duplicate" && <XCircle size={16} />}
-                  </div>
-
-                  <strong>{node}</strong>
-
-                  <span>
-                    {node === "Event" && "Webhook truth"}
-                    {node === "Episode" && "State context"}
-                    {node === "Diagnosis" && "Failure class"}
-                    {node === "Policy" && "Deterministic gate"}
-                    {node === "Executor" && "Bounded action"}
-                    {node === "Outcome" && scenario.outcome}
-                    {node === "Audit" && "Hash-chain record"}
-                    {node === "Blocked" && "No retry"}
-                    {node === "Suppressed" && "No execution"}
-                    {node === "Idempotency" && "Event ID check"}
-                    {node === "Duplicate" && "Already processed"}
-                  </span>
-                </div>
-
-                {index < scenario.path.length - 1 && (
-                  <ArrowDown
-                    className={`rg-graph-arrow ${
-                      index < activeStep ? "active" : ""
-                    }`}
-                    size={18}
-                  />
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      <div className="rg-lower-grid">
-        <section className="rg-panel">
-          <div className="rg-section-label">EXECUTION TIMELINE</div>
-
-          <div className="rg-timeline">
-            {[
-              ["Event received", "Webhook accepted"],
-              ["Episode assembled", "Context reconciled"],
-              ["Diagnosis completed", scenario.diagnosis],
-              ["Policy evaluated", scenario.policy],
-              [
-                scenario.recoverable
-                  ? "Action executed"
-                  : "Action suppressed",
-                scenario.expected,
-              ],
-              ["Audit committed", "Ledger entry appended"],
-            ].map(([title, detail], index) => (
-              <div
-                className={`rg-timeline-item ${
-                  result && index <= Math.min(activeStep, 5)
-                    ? "done"
-                    : ""
-                }`}
-                key={title}
-              >
-                <div className="rg-timeline-dot">
-                  {result && index <= Math.min(activeStep, 5) ? (
-                    <CheckCircle size={13} />
-                  ) : (
-                    <span>{index + 1}</span>
-                  )}
-                </div>
-
-                <div>
-                  <strong>{title}</strong>
-                  <span>{detail}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="rg-panel">
-          <div className="rg-section-label">SAFETY CONTRACT</div>
-
-          <div className="rg-contract">
-            <ContractRow
-              icon={FileCheck2}
-              title="Classify before action"
-              detail="No blind retry on provisional failure."
-            />
-
-            <ContractRow
-              icon={Lock}
-              title="Idempotent execution"
-              detail="Repeated events cannot create repeated actions."
-            />
-
-            <ContractRow
-              icon={Shield}
-              title="Policy owns money decisions"
-              detail="LLMs propose intent; deterministic code gates execution."
-            />
-
-            <ContractRow
-              icon={Database}
-              title="Audit every decision"
-              detail="Recovery and blocked actions are ledger-backed."
-            />
-          </div>
-        </section>
-      </div>
-
-      <div className="rg-lower-grid">
-        <section className="rg-panel">
-          <div className="rg-section-label">LIVE METRICS</div>
-
-          <div className="rg-metric-grid">
-            {metricEntries.slice(0, 10).map(([key, value]) => (
-              <Mini
-                key={key}
-                label={key.replace(/_/g, " ")}
-                value={fmt(value)}
-              />
-            ))}
-          </div>
-
-          {!metricEntries.length && (
-            <div className="rg-empty">
-              Metrics become available when the backend is running.
-            </div>
-          )}
-        </section>
-
-        <section className="rg-panel">
-          <div className="rg-panel-heading">
-            <div>
-              <div className="rg-section-label">RECENT EPISODES</div>
-              <h2>Live state</h2>
-            </div>
-
-            <span className="rg-muted">
-              {lastUpdated || "not refreshed"}
-            </span>
-          </div>
-
-          <div className="rg-episodes">
-            {episodes.slice(0, 7).map((episode: any, index: number) => (
-              <div
-                className="rg-episode"
-                key={episode.id || episode.episode_id || index}
-              >
-                <span className="rg-mono">
-                  {fmt(
-                    episode.id ||
-                      episode.episode_id ||
-                      `episode-${index + 1}`
-                  )}
-                </span>
-
-                <span>
-                  {fmt(episode.status || episode.state)}
-                </span>
-
-                <span>
-                  {fmt(
-                    episode.failure_reason ||
-                      episode.reason ||
-                      episode.scenario
-                  )}
-                </span>
-              </div>
-            ))}
-
-            {!episodes.length && (
-              <div className="rg-empty">
-                <CircleDot size={15} />
-                No episodes loaded.
-              </div>
-            )}
-          </div>
-        </section>
-      </div>
     </div>
   );
 }
 
-function Mini({
-  label,
-  value,
-}: {
-  label: string;
-  value: any;
-}) {
-  return (
-    <div className="rg-mini">
-      <span>{label}</span>
-      <strong>{fmt(value)}</strong>
-    </div>
-  );
-}
-
-function ContractRow({
-  icon: Icon,
-  title,
-  detail,
-}: {
-  icon: any;
-  title: string;
-  detail: string;
-}) {
-  return (
-    <div className="rg-contract-row">
-      <div className="rg-contract-icon">
-        <Icon size={15} />
-      </div>
-
-      <div>
-        <strong>{title}</strong>
-        <span>{detail}</span>
-      </div>
-    </div>
-  );
+function Mini({ label, value }: { label: string; value: string }) {
+  return <div><span>{label}</span><strong>{value}</strong></div>;
 }
