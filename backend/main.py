@@ -111,7 +111,6 @@
 # app.include_router(metrics_router)
 # app.include_router(events_router)
 # app.include_router(admin_router)
-app.include_router(demo_router)
 
 # app.add_middleware(
 #     CORSMiddleware,
@@ -353,6 +352,7 @@ app.include_router(episodes_router)
 app.include_router(metrics_router)
 app.include_router(events_router)
 app.include_router(admin_router)
+app.include_router(demo_router)
 
 
 @app.get("/health")
