@@ -82,11 +82,27 @@ chmod +x test_e2e.sh
 ./test_e2e.sh
 ```
 
-## The One Rule
+
+## Safety Model
 
 > **LLMs propose typed intents. Deterministic code owns money, limits, IDs, and retries. Always.**
 
-Every Razorpay API call has a `reference_id` as idempotency key. Webhook truth beats browser UI. PostgreSQL hash chain is the only source of truth. The policy gate is the only entry point to the executor.
+Recovery Graph never allows an LLM to directly execute a payment action.
+
+The recovery pipeline is:
+
+1. Receive and authenticate the webhook.
+2. Deduplicate the event.
+3. Reconcile it into a payment episode.
+4. Diagnose the failure class.
+5. Pass the proposed action through the deterministic policy gate.
+6. Enforce amount, retry, idempotency and safety constraints.
+7. Execute only an allowed action.
+8. Record the decision and outcome in the append-only audit ledger.
+
+The system explicitly blocks unsafe recovery for terminal conditions such as invalid VPA, duplicate events and non-recoverable failures.
+
+Webhook truth beats browser UI. PostgreSQL hash-chain records provide the audit trail. The policy gate is the only entry point to the executor.
 
 ## Eval
 
@@ -107,6 +123,80 @@ python -m eval.benchmark
 | Payment Links API | Recovery path creation with `reference_id` idempotency |
 | Payments API | Direct status fetch for reconciliation |
 | Subscriptions | Recurring payment failure episodes |
+
+
+
+## Judge Demo
+
+### Scene 1 — Late capture
+
+Open **Live Demo → UPI late capture**.
+
+Run the scenario.
+
+Show:
+
+`Event → Episode → Diagnosis → Policy → Executor → Outcome → Audit`
+
+Explain:
+
+> "This is the core Razorpay-specific problem. A payment can fail provisionally and then arrive as captured. We reconcile the same payment instead of creating a second charge."
+
+### Scene 2 — Duplicate prevention
+
+Select **Duplicate event**.
+
+Run it.
+
+Show:
+
+`Event → Idempotency → Duplicate → Policy → Suppressed → Audit`
+
+Explain:
+
+> "The same event cannot cause the recovery action twice. The second delivery is suppressed."
+
+### Scene 3 — Blocked recovery
+
+Select **Invalid VPA**.
+
+Run it.
+
+Show:
+
+`Event → Episode → Diagnosis → Policy → Blocked → Outcome → Audit`
+
+Explain:
+
+> "Recovery Graph does not retry everything. The policy gate explicitly blocks an unsafe action."
+
+### Scene 4 — Evidence
+
+Open **Evaluation**.
+
+Show:
+
+- 200/200 diagnosis accuracy
+- Precision 1.000
+- Recall 1.000
+- T-learner lift +1.95pp
+- 95% CI [-5.32pp, +10.33pp]
+- Diff-in-means +7.03pp
+- pre-registration hash
+- ledger integrity
+
+Important:
+
+> "The benchmark shows a positive point estimate, but the confidence interval crosses zero, so we do not claim statistical significance."
+
+### Scene 5 — Architecture
+
+Open **Architecture**.
+
+Explain:
+
+> "The key architectural boundary is that probabilistic diagnosis cannot directly move money. Deterministic policy owns execution."
+
 
 ---
 

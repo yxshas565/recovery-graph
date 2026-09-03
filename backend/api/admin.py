@@ -167,7 +167,7 @@ async def inject_scenario(
             )
 
             notes.append(
-                f"{p['body']['event']} -> {r.status_code}"
+                f"{p['body']['event']} -> {r.status_code}: {r.text}"
             )
 
             await asyncio.sleep(

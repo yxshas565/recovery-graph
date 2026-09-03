@@ -36,11 +36,12 @@ warn() {
 # Environment
 # ---------------------------------------------------------------------------
 
-export PYTHONIOENCODING="${PYTHONIOENCODING:-utf-8}"
+export PYTHONIOENCODING="utf-8"
+export PYTHONUTF8=1
 
 if [ -z "${ADMIN_SECRET:-}" ]; then
     if [ -f "$ROOT/.env" ]; then
-        ADMIN_SECRET="$(grep '^ADMIN_SECRET=' "$ROOT/.env" | head -n 1 | cut -d '=' -f2-)"
+        ADMIN_SECRET="$(grep '^ADMIN_SECRET=' "$ROOT/.env" | head -n 1 | cut -d '=' -f2- | tr -d '\r')"
         export ADMIN_SECRET
     fi
 fi
@@ -49,12 +50,8 @@ if [ -z "${ADMIN_SECRET:-}" ]; then
     fail "ADMIN_SECRET is not set"
 fi
 
-if [ -z "${DATABASE_URL:-}" ]; then
-    if [ -f "$ROOT/.env" ]; then
-        DATABASE_URL="$(grep '^DATABASE_URL=' "$ROOT/.env" | head -n 1 | cut -d '=' -f2-)"
-        export DATABASE_URL
-    fi
-fi
+DATABASE_URL="${DATABASE_URL:-postgresql://postgres:postgres@127.0.0.1:5433/recovery_graph}"
+export DATABASE_URL
 
 if [ -z "${DATABASE_URL:-}" ]; then
     fail "DATABASE_URL is not set"
@@ -72,6 +69,8 @@ json_payload() {
     python.exe - "$1" "$2" <<'PY'
 import json
 import sys
+sys.stdout.reconfigure(encoding="utf-8")
+sys.stderr.reconfigure(encoding="utf-8")
 
 scenario = sys.argv[1]
 amount = int(sys.argv[2])
@@ -90,14 +89,41 @@ admin_inject() {
 
     payload="$(json_payload "$scenario" "$amount")" || return 1
 
-    curl.exe \
-        -sS \
-        --fail-with-body \
-        --noproxy "*" \
-        -X POST "$BASE/api/admin/inject" \
-        -H "Content-Type: application/json" \
-        -H "x-admin-secret: $ADMIN_SECRET" \
-        --data-binary "$payload"
+    python.exe - "$BASE" "$ADMIN_SECRET" "$scenario" "$amount" <<'PY'
+import json
+import sys
+sys.stdout.reconfigure(encoding="utf-8")
+sys.stderr.reconfigure(encoding="utf-8")
+import urllib.request
+import urllib.error
+
+base = sys.argv[1]
+admin_secret = sys.argv[2]
+scenario = sys.argv[3]
+amount = int(sys.argv[4])
+
+body = json.dumps({
+    "scenario": scenario,
+    "amount_paise": amount,
+}).encode()
+
+req = urllib.request.Request(
+    base + "/api/admin/inject",
+    data=body,
+    method="POST",
+    headers={
+        "Content-Type": "application/json",
+        "x-admin-secret": admin_secret,
+    },
+)
+
+try:
+    with urllib.request.urlopen(req, timeout=30) as response:
+        print(response.read().decode())
+except urllib.error.HTTPError as e:
+    print(e.read().decode(), file=sys.stderr)
+    raise SystemExit(1)
+PY
 }
 
 # ---------------------------------------------------------------------------
@@ -125,6 +151,8 @@ if r="$(admin_inject "upi_late_capture" 50000)"; then
     if echo "$r" | python.exe -c '
 import json
 import sys
+sys.stdout.reconfigure(encoding="utf-8")
+sys.stderr.reconfigure(encoding="utf-8")
 
 d = json.load(sys.stdin)
 injected = d.get("injected", [])
@@ -153,6 +181,8 @@ if r="$(curl.exe -sS --fail --noproxy "*" "$BASE/api/episodes?limit=20")"; then
     echo "$r" | python.exe -c '
 import json
 import sys
+sys.stdout.reconfigure(encoding="utf-8")
+sys.stderr.reconfigure(encoding="utf-8")
 
 d = json.load(sys.stdin)
 eps = d.get("episodes", [])
@@ -252,6 +282,8 @@ if r="$(curl.exe -sS --fail --noproxy "*" "$BASE/api/metrics")"; then
     echo "$r" | python.exe -c '
 import json
 import sys
+sys.stdout.reconfigure(encoding="utf-8")
+sys.stderr.reconfigure(encoding="utf-8")
 
 d = json.load(sys.stdin)
 s = d.get("summary", {})
