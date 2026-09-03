@@ -322,7 +322,7 @@ step "Ledger chain integrity check"
 import os
 from backend.ledger.audit_ledger import AuditLedger
 
-conninfo = os.environ["DATABASE_URL"]
+conninfo = os.environ.get("DATABASE_URL") or "postgresql://postgres:postgres@127.0.0.1:5433/recovery_graph"
 
 ledger = AuditLedger(conninfo)
 
@@ -382,7 +382,7 @@ import os
 from eval.benchmark import run_benchmark
 
 result = run_benchmark(
-    os.environ["DATABASE_URL"],
+    os.environ.get("DATABASE_URL") or "postgresql://postgres:postgres@127.0.0.1:5433/recovery_graph",
     verbose=True
 )
 
