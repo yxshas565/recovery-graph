@@ -26,12 +26,12 @@ import {
 const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 const qc  = new QueryClient({ defaultOptions: { queries: { refetchInterval: 5000 } } });
 
-// â”€â”€ HELPERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── HELPERS ─────────────────────────────────────────────────────────────────
 const fmt = {
-  amount: (p: number) => `â‚¹${(p / 100).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`,
+  amount: (p: number) => `₹${(p / 100).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`,
   ts:     (s: string) => new Date(s).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
-  id:     (s: string) => s?.slice(0, 18) + "â€¦",
-  hash:   (s: string) => s?.slice(0, 8) + "â€¦" + s?.slice(-6),
+  id:     (s: string) => s?.slice(0, 18) + "…",
+  hash:   (s: string) => s?.slice(0, 8) + "…" + s?.slice(-6),
 };
 
 const STATE_COLOR: Record<string, string> = {
@@ -54,7 +54,7 @@ const STATE_LABEL: Record<string, string> = {
   created:            "Created",
 };
 
-// â”€â”€ COPY BUTTON â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── COPY BUTTON ──────────────────────────────────────────────────────────────
 function CopyBtn({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   const copy = () => {
@@ -74,7 +74,7 @@ function CopyBtn({ text }: { text: string }) {
   );
 }
 
-// â”€â”€ BADGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── BADGE ────────────────────────────────────────────────────────────────────
 function StateBadge({ state }: { state: string }) {
   return (
     <span className={`badge state-${state}`}>
@@ -84,7 +84,7 @@ function StateBadge({ state }: { state: string }) {
   );
 }
 
-// â”€â”€ PULSE BAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── PULSE BAR ────────────────────────────────────────────────────────────────
 function PulseBar({ theme, toggleTheme, liveCount }: {
   theme: string; toggleTheme: () => void; liveCount: number;
 }) {
@@ -122,7 +122,7 @@ function PulseBar({ theme, toggleTheme, liveCount }: {
   );
 }
 
-// â”€â”€ SIDEBAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── SIDEBAR ──────────────────────────────────────────────────────────────────
 const NAV = [
 
   { id: "overview",        icon: Activity,     label: "Overview",        badge: "live" },
@@ -184,7 +184,7 @@ function Sidebar({ page, setPage, episodeCount }: {
   );
 }
 
-// â”€â”€ METRIC CARD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── METRIC CARD ──────────────────────────────────────────────────────────────
 function MetricCard({ label, value, sub, color, cls }: {
   label: string; value: string; sub: string; color: string; cls?: string;
 }) {
@@ -197,7 +197,7 @@ function MetricCard({ label, value, sub, color, cls }: {
   );
 }
 
-// â”€â”€ OVERVIEW PAGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── OVERVIEW PAGE ────────────────────────────────────────────────────────────
 function OverviewPage({ setPage, setSelectedEpisode }: {
   setPage: (p: string) => void;
   setSelectedEpisode: (id: string) => void;
@@ -235,7 +235,7 @@ function OverviewPage({ setPage, setSelectedEpisode }: {
       <div className="metrics-grid">
         <MetricCard
           label="Recovery Rate"
-          value={s.recovery_rate_pct ? `${s.recovery_rate_pct}%` : "â€”"}
+          value={s.recovery_rate_pct ? `${s.recovery_rate_pct}%` : "—"}
           sub="of eligible episodes"
           color="var(--success)"
           cls="success"
@@ -359,7 +359,7 @@ function OverviewPage({ setPage, setSelectedEpisode }: {
   );
 }
 
-// â”€â”€ EPISODES PAGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── EPISODES PAGE ────────────────────────────────────────────────────────────
 function EpisodesPage({ setPage, setSelectedEpisode }: {
   setPage: (p: string) => void;
   setSelectedEpisode: (id: string) => void;
@@ -418,14 +418,14 @@ function EpisodesPage({ setPage, setSelectedEpisode }: {
                   <td className="mono">{fmt.amount(ep.amount_paise)}</td>
                   <td className="mono" style={{ textTransform: "uppercase",
                     color: "var(--text-secondary)" }}>
-                    {ep.method || "â€”"}
+                    {ep.method || "—"}
                   </td>
                   <td>
                     {ep.failure_class ? (
                       <span className="mono" style={{ color: "var(--text-secondary)" }}>
                         {ep.failure_class.replace(/_/g, " ")}
                       </span>
-                    ) : "â€”"}
+                    ) : "—"}
                   </td>
                   <td><StateBadge state={ep.state} /></td>
                   <td className="mono" style={{ color: "var(--text-secondary)",
@@ -462,7 +462,7 @@ function EpisodesPage({ setPage, setSelectedEpisode }: {
   );
 }
 
-// â”€â”€ LEDGER PAGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── LEDGER PAGE ───────────────────────────────────────────────────────────────
 function LedgerPage({ selectedEpisode }: { selectedEpisode: string }) {
   const [episodeId, setEpisodeId] = useState(selectedEpisode || "");
   const [input, setInput] = useState(selectedEpisode || "");
@@ -578,7 +578,7 @@ function LedgerPage({ selectedEpisode }: { selectedEpisode: string }) {
                   <CopyBtn text={e.entry_hash} />
                 </div>
                 <div className="ledger-hash" style={{ marginTop: 2 }}>
-                  payload: {JSON.stringify(e.payload).slice(0, 80)}â€¦
+                  payload: {JSON.stringify(e.payload).slice(0, 80)}…
                 </div>
               </div>
               <div className="chain-ok">
@@ -604,7 +604,7 @@ function LedgerPage({ selectedEpisode }: { selectedEpisode: string }) {
   );
 }
 
-// â”€â”€ REPLAY PAGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── REPLAY PAGE ───────────────────────────────────────────────────────────────
 function ReplayPage({ selectedEpisode }: { selectedEpisode: string }) {
   const [episodeId, setEpisodeId] = useState(selectedEpisode || "");
   const [input, setInput]         = useState(selectedEpisode || "");
@@ -781,7 +781,7 @@ function ReplayPage({ selectedEpisode }: { selectedEpisode: string }) {
           <div className="empty-state">
             <RotateCcw size={36} className="empty-state-icon" />
             <div className="empty-state-title">
-              {isLoading ? "Loading replayâ€¦" : episodeId ? "No decisions found" : "Enter an episode ID"}
+              {isLoading ? "Loading replay…" : episodeId ? "No decisions found" : "Enter an episode ID"}
             </div>
             <div className="empty-state-sub">
               {episodeId
@@ -795,7 +795,7 @@ function ReplayPage({ selectedEpisode }: { selectedEpisode: string }) {
   );
 }
 
-// â”€â”€ COUNTERFACTUAL PAGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── COUNTERFACTUAL PAGE ───────────────────────────────────────────────────────
 function CounterfactualPage() {
   const [showIntervention, setShowIntervention] = useState(true);
   const { data: metrics } = useQuery({
@@ -921,13 +921,13 @@ function CounterfactualPage() {
   );
 }
 
-// â”€â”€ INJECT PAGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── INJECT PAGE ───────────────────────────────────────────────────────────────
 const SCENARIOS = [
-  { id: "upi_late_capture",   label: "UPI Late Capture",   desc: "payment.failed â†’ payment.captured", color: "var(--accent)" },
-  { id: "card_final_failure", label: "Card Final Failure",  desc: "expired card â†’ recovery link",       color: "var(--danger)" },
-  { id: "insufficient_funds", label: "Insufficient Funds",  desc: "balance failure â†’ recovery",         color: "var(--warning)" },
-  { id: "duplicate_event",    label: "Duplicate Event",     desc: "dedup test â€” same event_id twice",   color: "var(--purple)" },
-  { id: "invalid_vpa",        label: "Invalid VPA",         desc: "unrecoverable â€” escalate",           color: "var(--text-muted)" },
+  { id: "upi_late_capture",   label: "UPI Late Capture",   desc: "payment.failed → payment.captured", color: "var(--accent)" },
+  { id: "card_final_failure", label: "Card Final Failure",  desc: "expired card → recovery link",       color: "var(--danger)" },
+  { id: "insufficient_funds", label: "Insufficient Funds",  desc: "balance failure → recovery",         color: "var(--warning)" },
+  { id: "duplicate_event",    label: "Duplicate Event",     desc: "dedup test — same event_id twice",   color: "var(--purple)" },
+  { id: "invalid_vpa",        label: "Invalid VPA",         desc: "unrecoverable — escalate",           color: "var(--text-muted)" },
 ];
 
 function InjectPage() {
@@ -963,7 +963,7 @@ function InjectPage() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span style={{ fontSize: 11, color: "var(--text-muted)",
-            fontFamily: "var(--font-mono)" }}>â‚¹</span>
+            fontFamily: "var(--font-mono)" }}>₹</span>
           <input
             value={amount}
             onChange={e => setAmount(e.target.value)}
@@ -1037,9 +1037,9 @@ function InjectPage() {
         </div>
         <div className="card-body">
           {[
-            ["Signed payloads", "Every injected event is signed with the real webhook secret â€” HMAC-SHA256 verification runs exactly as in production."],
-            ["Real deduplication", "Duplicate scenario fires the same x-razorpay-event-id twice â€” Redis SET NX dedup must absorb the second event."],
-            ["Full pipeline", "Injection hits /webhooks/razorpay â€” ingestor â†’ state machine â†’ agent graph â†’ ledger all execute."],
+            ["Signed payloads", "Every injected event is signed with the real webhook secret — HMAC-SHA256 verification runs exactly as in production."],
+            ["Real deduplication", "Duplicate scenario fires the same x-razorpay-event-id twice — Redis SET NX dedup must absorb the second event."],
+            ["Full pipeline", "Injection hits /webhooks/razorpay — ingestor → state machine → agent graph → ledger all execute."],
             ["UPI late capture", "The key scenario: payment.failed fires, then payment.captured for the same pay_ ID. Agent must NOT create a recovery link."],
           ].map(([title, desc]) => (
             <div key={title} style={{ display: "flex", gap: 12, marginBottom: 14 }}>
@@ -1063,7 +1063,7 @@ function InjectPage() {
   );
 }
 
-// â”€â”€ SSE HOOK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── SSE HOOK ─────────────────────────────────────────────────────────────────
 function useSSE(onEvent: (e: any) => void) {
   const cb = useCallback(onEvent, []);
   useEffect(() => {
@@ -1100,7 +1100,7 @@ function useSSE(onEvent: (e: any) => void) {
   }, [cb]);
 }
 
-// â”€â”€ APP ROOT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── APP ROOT ─────────────────────────────────────────────────────────────────
 function App() {
   const [theme, setTheme]   = useState<"dark" | "light">("dark");
   const [page,  setPage]    = useState("overview");

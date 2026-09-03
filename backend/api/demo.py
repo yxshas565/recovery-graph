@@ -10,7 +10,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from config import get_settings
-from api.admin import build_scenario
+from api.admin import InjectRequest, build_scenario
 
 router = APIRouter(prefix="/api/demo", tags=["demo"])
 settings = get_settings()
@@ -40,7 +40,8 @@ async def inject_demo(req: DemoInjectRequest):
         raise HTTPException(400, "Demo amount must be between 100 and 10000000 paise")
 
     async with _demo_lock:
-        payloads = build_scenario(req.model_copy())
+        scenario_req = InjectRequest(scenario=req.scenario, amount_paise=req.amount_paise)
+        payloads = build_scenario(scenario_req)
 
         from main import app
 
