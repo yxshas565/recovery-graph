@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379"
     anthropic_api_key: str
     environment: str = "development"
+    frontend_url: str = "http://localhost:5173"
     admin_secret: str
 
     # Episode timing

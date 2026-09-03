@@ -340,6 +340,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "http://localhost:3000",
+        settings.frontend_url,
     ],
     allow_methods=["*"],
     allow_headers=["*"],
