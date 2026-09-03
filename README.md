@@ -2,7 +2,7 @@
 
 > **Autonomous payment-failure recovery with reconciliation, deterministic safety controls, causal diagnosis, and an auditable recovery ledger.**
 
-**Razorpay AI Buildathon 2026 · Track 01**
+**Razorpay AI Buildathon 2026 · Track 03 — AI Revenue Recovery**
 
 Recovery Graph is an autonomous payment recovery system designed around a simple principle:
 
@@ -271,7 +271,7 @@ The payment lifecycle is treated as an **event-sourced reconciliation problem**.
                  │ React Operations     │
                  │ Console              │
                  │                      │
-                 │ Live feed            │
+                 │ Live operations      │
                  │ Episodes             │
                  │ Architecture         │
                  │ Evaluation           │
@@ -1992,13 +1992,13 @@ The complete E2E suite has passed after validating:
 
 # License
 
-Add the project's intended license here before public distribution.
+This project was built for the Razorpay AI Buildathon 2026.
 
 ---
 
 # Acknowledgements
 
-Built for the **Razorpay AI Buildathon 2026 · Track 01**.
+Built for the **Razorpay AI Buildathon 2026 · Track 03 — AI Revenue Recovery**.
 
 The project explores a safety-first approach to autonomous payment recovery where AI improves diagnosis and decision support while deterministic software retains control over money movement.
 

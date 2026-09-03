@@ -176,9 +176,9 @@ function Sidebar({ page, setPage, episodeCount }: {
       </div>
       <div className="sidebar-footer">
         <div className="sidebar-footer-text">Razorpay Buildathon 2026</div>
-        <div className="sidebar-footer-text" style={{ color: "var(--accent)", marginTop: 2 }}>
+        {/* <div className="sidebar-footer-text" style={{ color: "var(--accent)", marginTop: 2 }}>
           Track 01 Â· Recovery Graph
-        </div>
+        </div> */}
       </div>
     </div>
   );
