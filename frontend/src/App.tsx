@@ -1,4 +1,4 @@
-﻿import DemoPage from "./DemoPage";
+import DemoPage from "./DemoPage";
 import ArchitecturePage from "./ArchitecturePage";
 import EvaluationPage from "./EvaluationPage";
 // frontend/src/App.tsx
@@ -938,11 +938,10 @@ function InjectPage() {
     setLoading(scenario);
     setResult(null);
     try {
-      const r = await fetch(`${API}/api/admin/inject`, {
+      const r = await fetch(`${API}/api/demo/inject`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-admin-secret": localStorage.getItem("recovery_graph_admin_secret") || "",
         },
         body: JSON.stringify({ scenario, amount_paise: parseInt(amount) }),
       });

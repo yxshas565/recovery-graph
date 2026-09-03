@@ -111,6 +111,7 @@
 # app.include_router(metrics_router)
 # app.include_router(events_router)
 # app.include_router(admin_router)
+app.include_router(demo_router)
 
 # app.add_middleware(
 #     CORSMiddleware,
@@ -290,6 +291,7 @@ from api.episodes import router as episodes_router
 from api.metrics import router as metrics_router
 from api.events_stream import router as events_router
 from api.admin import router as admin_router
+from api.demo import router as demo_router
 
 
 logging.basicConfig(level=logging.INFO)
